@@ -1,18 +1,19 @@
-function Model = srcOptimisation(Model)
+function Model = srcOptimisation_Cell(Model)
 	% initialisation
 	loop = 0.0; change = 1.0; cnt = 0;
+	maxiter = 300;
 
 	% distribute volume fraction to each element
 	Model.X = zeros(Model.numElems,1); Model.X(:) = Model.volfr;
 
 	% iteration
-	while change > 0.01
+	while (change > 0.01 && loop <= maxiter)
 		loop = loop + 1; 
 		oldX = zeros(Model.numElems,1); oldX = Model.X;
 		Model.c = 0.0;
 
 		% compute stiffness matrix
-		Model = srcLinearStiffness2D_cell(Model);
+		Model = srcLinearStiffness2D_Cell(Model);
 
 		% solve system
 		Model = solveLinearSystem(Model);

@@ -1,13 +1,9 @@
-function Model = srcLinearStiffness2D_cell(Model)
+function Model = srcLinearStiffness2D_FE(Model)
 	% initialisation
 	K = sparse(Model.DOFs,Model.DOFs);
 	Kel = cell(Model.numElems,1);
 	Xel = cell(Model.numElems,1);
-	IDel = cell(Model.numElems,1);
 	Vel = zeros(Model.numElems,1);
-
-	% get Gauss points
-	[Qi,Wi,Qb,Wb] = srcGaussQuadrature_Cell;
 
 	% element loop
 	for ivo = 1:Model.numElems
@@ -16,11 +12,15 @@ function Model = srcLinearStiffness2D_cell(Model)
 		
 		% current element coordinates
 		wkX = zeros(nndof,2); wkX = Model.Nodes(wkInd,:);
+
+		% current Gauss quadrature
+		[Q,W] = srcGaussQuadrature_FE(nndof);
+
 		% current element area
 		Vel(ivo,1) = polyarea(wkX(:,1),wkX(:,2));
 		
 		% subcell loop
-		[Ksub,Kel,Xel,IDel,Vel] = srcLinearSmoothedStiffness2D_cell(Model,ivo,wkInd,wkX,Qi,Wi,Qb,Wb,nndof,Kel,Xel,IDel,Vel);
+		[Ksub,Kel,Xel,Vel] = srcLinearElementStiffness2D(Model,ivo,wkInd,wkX,Q,W,nndof,Kel,Xel,Vel);
 
 		% assemble global stiffness matrix
 		edof = zeros(1,2*nndof);
@@ -31,6 +31,5 @@ function Model = srcLinearStiffness2D_cell(Model)
 	Model.K = K;
 	Model.Kel = Kel;
 	Model.Xel = Xel;
-    Model.IDel = IDel;
 	Model.Vel = Vel;
 end
